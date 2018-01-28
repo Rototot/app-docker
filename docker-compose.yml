@@ -1,0 +1,88 @@
+version: '3'
+services:
+  redis:
+    image: redis
+    environment: []
+    volumes:
+      - ./docker/data/redis:/data
+    ports:
+      - 6379:6379
+    networks:
+      - frontend
+  postgres:
+    image: 'postgres:9.6.6'
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./docker/data/postgresql:/var/lib/postgresql/data
+    networks:
+      - frontend
+
+  rabbitmq:
+    image: 'rabbitmq:3-management'
+    volumes:
+      - ./docker/data/rabbitmq:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_LOGS=./docker/logs/rabbimq
+    ports:
+      - 15672:15672
+    networks:
+      - frontend
+  php:
+    build:
+      context: docker/php7-fpm/${APP_ENV}
+      args:
+        TIMEZONE: ${TIMEZONE}
+        XDEBUG_REMOTE_HOST: ${XDEBUG_REMOTE_HOST}
+        XDEBUG_IDEKEY: ${XDEBUG_IDEKEY}
+    ports:
+      - '9000:9000'
+    environment:
+      - APP_NAME=${APP_NAME}
+      - APP_DEBUG=1
+      - APP_ENV=dev
+      - APP_DB_NAME=${DB_NAME}
+      - APP_DB_USER=${DB_USER}
+      - APP_DB_PASSWORD=${DB_PASSWORD}
+      - APP_DB_PORT=${DB_PORT}
+      - APP_REDIS_HOST=${REDIS_HOST}
+      - APP_REDIS_PORT=${REDIS_PORT}
+      - APP_RABBITMQ_USER=${RABBITMQ_USER}
+      - APP_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - APP_RABBITMQ_PORT=${RABBITMQ_PORT}
+      - XDEBUG_CONFIG=${XDEBUG_CONFIG}
+      - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
+    volumes:
+      - ${PROJECT_APP_PATH}:/var/www/app
+    links:
+      - postgres:db
+      - redis
+    networks:
+      - frontend
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+  nginx:
+    build: docker/nginx/${APP_ENV}
+    ports:
+      - '80:80'
+    volumes:
+      - ${PROJECT_APP_PATH}:/var/www/app
+      - ./docker/logs/nginx/:/var/log/nginx
+    links:
+      - php
+    networks:
+      - frontend
+#    extra_hosts:
+#      - "messaging.dev:"
+networks:
+  frontend:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 178.27.0.0/16

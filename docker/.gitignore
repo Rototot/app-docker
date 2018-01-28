@@ -1,0 +1,16 @@
+logs/app/*
+logs/nginx/*
+
+!logs/app/.gitkeep
+!logs/nginx/.gitkeep
+
+data/*
+data/redis/*
+data/rabbitmq/*
+data/postgresql/*
+
+!data/.gitkeep
+!data/redis
+!data/redis/.gitkeep
+!data/rabbitmq
+!data/rabbitmq/.gitkeep
