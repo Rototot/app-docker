@@ -1,9 +1,9 @@
 app/*
-nginx/*
+apache/*
 rabbitmq/*
 
-!nginx
-!nginx/.gitkeep
 !app
 !rabbitmq
 !rabbitmq/.gitkeep
+!apache
+!apache/.gitkeep

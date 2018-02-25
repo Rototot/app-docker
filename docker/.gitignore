@@ -6,6 +6,7 @@ logs/nginx/*
 
 data/*
 data/redis/*
+data/apache/*
 data/rabbitmq/*
 data/postgresql/*
 
@@ -14,3 +15,5 @@ data/postgresql/*
 !data/redis/.gitkeep
 !data/rabbitmq
 !data/rabbitmq/.gitkeep
+!data/apache
+!data/apache/.gitkeep

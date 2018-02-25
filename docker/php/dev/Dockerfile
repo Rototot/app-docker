@@ -1,4 +1,4 @@
-FROM php:7.1-fpm
+FROM php:7.2-apache
 ARG TIMEZONE
 ARG XDEBUG_IDEKEY
 
@@ -47,6 +47,7 @@ RUN docker-php-ext-install \
     pdo_pgsql \
     bcmath \
     mcrypt \
+    pdo_mysql
 #    opcache \
 #    zip \
 #    soap \

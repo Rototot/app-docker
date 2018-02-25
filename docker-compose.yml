@@ -9,15 +9,17 @@ services:
       - 6379:6379
     networks:
       - frontend
-  postgres:
-    image: 'postgres:9.6.6'
+  db:
+    image: 'mysql:latest'
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - '5432:5432'
     volumes:
-      - ./docker/data/postgresql:/var/lib/postgresql/data
+      - ./docker/data/mysql:/var/lib/mysql
     networks:
       - frontend
 
@@ -33,13 +35,13 @@ services:
       - frontend
   php:
     build:
-      context: docker/php7-fpm/${APP_ENV}
+      context: docker/php/${APP_ENV}
       args:
         TIMEZONE: ${TIMEZONE}
         XDEBUG_REMOTE_HOST: ${XDEBUG_REMOTE_HOST}
         XDEBUG_IDEKEY: ${XDEBUG_IDEKEY}
     ports:
-      - '9000:9000'
+      - 80:80
     environment:
       - APP_NAME=${APP_NAME}
       - APP_DEBUG=1
@@ -57,22 +59,23 @@ services:
       - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
     volumes:
       - ${PROJECT_APP_PATH}:/var/www/app
+      - ./docker/logs/apache/:/var/log/nginx
     links:
-      - postgres:db
+      - db:db
       - redis
     networks:
       - frontend
     depends_on:
-      - postgres
+      - db
       - redis
       - rabbitmq
-  nginx:
-    build: docker/nginx/${APP_ENV}
+  apache:
+    build: docker/apache/${APP_ENV}
     ports:
       - '80:80'
     volumes:
       - ${PROJECT_APP_PATH}:/var/www/app
-      - ./docker/logs/nginx/:/var/log/nginx
+      - ./docker/logs/apache/:/var/log/nginx
     links:
       - php
     networks:
